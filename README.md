@@ -1,3 +1,3 @@
 # Yan-Sweet-Corner
 
-Welcome to Yan Sweet Corner — made with love in CDO.
+Welcome to Yan Sweet Corner â€” fresh Filipino desserts, made with love in CDO.
