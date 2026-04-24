@@ -1,19 +1,14 @@
 # Yan-Sweet-Corner
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+ Welcome to Yan Sweet Corner — fresh Filipino desserts, made with love in CDO.
 
-Currently, two official plugins are available:
+** Live site:** https://yan-sweet-corner.vercel.app
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## About
+A home-based Filipino dessert business offering Mango Float, Strawberry Float, Blueberry Float, Leche Flan, Puto, Kutsinta, Cookies, Crinkles, and Polvoron. Customers browse available products, check stock levels, and reserve via Messenger.
 
-## React Compiler
+## Tech Stack
+React + Vite, Tailwind-inspired CSS, Vitest, deployed on Vercel.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
-
-
-Welcome to Yan Sweet Corner — made with love in CDO.
+## Documentation
+All project docs are in the [`docs/`](./docs) folder: backlog, sprint plans, risk register, QA plan, defect log, release notes, deployment plan, support plan.
