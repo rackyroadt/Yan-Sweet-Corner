@@ -1,3 +1,4 @@
+// src/components/ProductCard.jsx
 import { isSoldOut, isLowStock, canReserve, formatPrice } from '../utils/stock';
 import { CONTACT } from '../data/products';
 
@@ -22,7 +23,10 @@ export default function ProductCard({ product }) {
         <p className="card__description">{product.description}</p>
 
         <div className="card__meta">
-          <span className="card__price">{formatPrice(product.price)}</span>
+          <span className="card__price">
+            {formatPrice(product.price)}
+            {product.unit && <span className="card__unit"> / {product.unit}</span>}
+          </span>
           <span className="card__stock">
             {soldOut ? 'Out of stock' : `${product.stock} left`}
           </span>

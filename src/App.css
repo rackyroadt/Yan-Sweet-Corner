@@ -361,3 +361,9 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+.card__unit {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
