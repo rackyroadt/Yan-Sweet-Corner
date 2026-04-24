@@ -1,4 +1,3 @@
-// src/components/ProductCard.jsx
 import { isSoldOut, isLowStock, formatPrice } from '../utils/stock';
 
 export default function ProductCard({ product }) {
@@ -8,7 +7,13 @@ export default function ProductCard({ product }) {
   return (
     <article className={`card ${soldOut ? 'card--sold-out' : ''}`}>
       <div className="card__image-wrapper">
-        <img src={product.image} alt={product.name} className="card__image" />
+        <img
+          src={product.image}
+          alt={product.name}
+          className="card__image"
+          loading="lazy"
+          decoding="async"
+        />
         {soldOut && <span className="badge badge--sold-out">Sold Out</span>}
         {lowStock && <span className="badge badge--low-stock">Low Stock</span>}
       </div>
@@ -30,5 +35,3 @@ export default function ProductCard({ product }) {
     </article>
   );
 }
-
-
