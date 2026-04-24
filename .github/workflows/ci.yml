@@ -1,0 +1,38 @@
+name: CI
+
+# Trigger the workflow on pushes to main and dev, and on PRs into main
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-and-build:
+    name: Test & Smoke Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run unit tests (Vitest)
+        run: npm test -- --run
+
+      - name: Smoke test — build succeeds
+        run: npm run build
+
+      - name: Smoke test — dist folder exists with expected files
+        run: |
+          test -d dist || (echo "dist folder not created" && exit 1)
+          test -f dist/index.html || (echo "dist/index.html missing" && exit 1)
+          echo "Smoke test passed — build artifacts look correct"
