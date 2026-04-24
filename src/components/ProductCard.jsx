@@ -1,14 +1,9 @@
 // src/components/ProductCard.jsx
-import { isSoldOut, isLowStock, canReserve, formatPrice } from '../utils/stock';
-import { CONTACT } from '../data/products';
+import { isSoldOut, isLowStock, formatPrice } from '../utils/stock';
 
 export default function ProductCard({ product }) {
   const soldOut = isSoldOut(product.stock);
   const lowStock = isLowStock(product.stock);
-
-  const messengerLink = `https://m.me/${CONTACT.messengerUsername}?text=${encodeURIComponent(
-    `Hi! I'd like to reserve: ${product.name}`
-  )}`;
 
   return (
     <article className={`card ${soldOut ? 'card--sold-out' : ''}`}>
@@ -31,17 +26,6 @@ export default function ProductCard({ product }) {
             {soldOut ? 'Out of stock' : `${product.stock} left`}
           </span>
         </div>
-
-        <a
-          href={canReserve(product.stock) ? messengerLink : undefined}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`btn btn--reserve ${soldOut ? 'btn--disabled' : ''}`}
-          aria-disabled={soldOut}
-          onClick={(e) => soldOut && e.preventDefault()}
-        >
-          {soldOut ? 'Unavailable' : 'Reserve via Messenger'}
-        </a>
       </div>
     </article>
   );
