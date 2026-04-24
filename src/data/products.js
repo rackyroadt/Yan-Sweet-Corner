@@ -1,3 +1,7 @@
+// src/data/products.js
+// Product catalog for Yan Sweet Corner.
+// Edit prices, descriptions, or starting stocks here — the UI updates automatically.
+
 import mangoFloat from '../assets/products/mango-float.jpeg';
 import strawberryFloat from '../assets/products/strawberry-float.jpeg';
 import berryFloat from '../assets/products/berry-float.jpeg';
@@ -13,8 +17,9 @@ export const PRODUCTS = [
     id: 'mango-float',
     name: 'Mango Float',
     description:
-      'Classic Filipino dessert with ripe mango slices, graham crackers, and sweet cream. Good for 4–6 people.',
+      'Classic Filipino dessert with ripe mango slices, graham crackers, and sweet cream. Served by the cup.',
     price: 30,
+    unit: 'cup',
     stock: 20,
     image: mangoFloat,
   },
@@ -22,18 +27,20 @@ export const PRODUCTS = [
     id: 'strawberry-float',
     name: 'Strawberry Float',
     description:
-      'A sweet twist on the classic — fresh strawberries layered with graham and cream. Good for 4–6 people.',
+      'A sweet twist on the classic — fresh strawberries layered with graham and cream. Served by the cup.',
     price: 30,
-    stock: 20,
+    unit: 'cup',
+    stock: 15,
     image: strawberryFloat,
   },
   {
-    id: 'berry-float',
-    name: 'Berry Float',
+    id: 'blueberry-float',
+    name: 'Blueberry Float',
     description:
-      'Mixed berries folded into creamy graham goodness. Rich, tangy, and perfect for special occasions.',
-    price: 30,
-    stock: 20,
+      'Rich blueberries folded into creamy graham goodness. Tangy, refreshing, and perfect as a treat.',
+    price: 35,
+    unit: 'cup',
+    stock: 10,
     image: berryFloat,
   },
   {
@@ -41,61 +48,67 @@ export const PRODUCTS = [
     name: 'Leche Flan',
     description:
       'Silky-smooth caramel custard made with fresh eggs and milk. Sold per llanera.',
-    price: 120,
-    stock: 5,
+    price: 80,
+    unit: 'llanera',
+    stock: 6,
     image: lecheFlan,
   },
   {
     id: 'puto',
     name: 'Puto',
     description:
-      'Soft, fluffy steamed rice cakes topped with cheese. Perfect merienda for 1 dozen pieces.',
-    price: 10,
-    stock: 50,
+      'Soft, fluffy steamed rice cakes topped with cheese. Perfect merienda any time of day.',
+    price: 5,
+    unit: 'piece',
+    stock: 100,
     image: puto,
   },
   {
     id: 'kutsinta',
     name: 'Kutsinta',
     description:
-      'Chewy brown rice cakes served with freshly grated coconut. 1 dozen pieces per order.',
+      'Chewy brown rice cakes served with freshly grated coconut.',
     price: 5,
-    stock: 50,
+    unit: 'piece',
+    stock: 100,
     image: kutsinta,
   },
   {
     id: 'cookies',
     name: 'Cookies',
     description:
-      'Homemade chewy chocolate chip cookies. Soft center, crisp edges. 10 pieces per pack.',
-    price: 40,
-    stock: 15,
+      'Homemade chewy chocolate chip cookies. Soft center, crisp edges.',
+    price: 10,
+    unit: 'piece',
+    stock: 50,
     image: cookies,
   },
   {
     id: 'crinkles',
     name: 'Crinkles',
     description:
-      'Fudgy chocolate crinkles dusted with powdered sugar. Melt-in-your-mouth. 10 pieces per pack.',
-    price: 15,
-    stock: 30,
+      'Fudgy chocolate crinkles dusted with powdered sugar. Melt-in-your-mouth goodness.',
+    price: 8,
+    unit: 'piece',
+    stock: 60,
     image: crinkles,
   },
   {
     id: 'polvoron',
     name: 'Polvoron',
     description:
-      'Traditional Filipino shortbread made with toasted flour, butter, and milk. 12 pieces per pack.',
+      'Traditional Filipino shortbread made with toasted flour, butter, and milk.',
     price: 5,
+    unit: 'piece',
     stock: 70,
     image: polvoron,
   },
 ];
 
-// Contact info 
+// Contact info — edit your details here.
 export const CONTACT = {
-  messengerUsername: 'Jiane Rackyle Sarting',
+  messengerUsername: 'rackyroadt',
   businessName: 'Yan Sweet Corner',
   hours: 'Daily, 9:00 AM – 7:00 PM',
-  location: 'Cagayan de Oro City, Philippines',
+  location: 'Cagayan de Oro, Philippines',
 };
