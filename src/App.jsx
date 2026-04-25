@@ -1,9 +1,11 @@
 // src/App.jsx
+import { Routes, Route } from 'react-router-dom';
 import ProductCard from './components/ProductCard';
+import AdminLayout from './components/AdminLayout';
 import { PRODUCTS, CONTACT } from './data/products';
 import './App.css';
 
-export default function App() {
+function PublicSite() {
   return (
     <div className="app">
       <header className="hero">
@@ -91,5 +93,14 @@ export default function App() {
         </p>
       </footer>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<PublicSite />} />
+      <Route path="/admin" element={<AdminLayout />} />
+    </Routes>
   );
 }

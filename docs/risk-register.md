@@ -104,3 +104,47 @@ Use well-maintained libraries only
 Review Cadence
 
 This register is reviewed at the start of each sprint and updated as new risks emerge. Closed risks remain documented for traceability.
+
+
+
+Risk Register Addendum (Step 9 — Security)
+
+
+Add to summary matrix
+
+| ID | Risk | L | I | Score | Severity | Owner |
+|----|------|---|---|-------|----------|-------|
+| R-11 | Admin credentials leaked via Git or screenshot | 2 | 5 | 10 | 🟡 Medium | BE |
+| R-12 | Brute-force or credential-stuffing attack on admin login | 3 | 4 | 12 | 🟡 Medium | BE |
+| R-13 | Vulnerable npm dependency introduced over time | 4 | 3 | 12 | 🟡 Medium | BE |
+
+
+
+Detailed entries to append
+
+R-11 — Admin Credentials Leaked
+- **Score:** 10 — 🟡 Medium
+- **Description:** The admin username and password live in `.env`. If `.env` is accidentally committed, screenshotted in a tutorial, or pasted into a chat, an attacker gains full admin access to the dashboard.
+- **Mitigation:**
+  - `.env` listed in `.gitignore` — verified by running `git status` after every change
+  - `.env.example` (planned) for onboarding without exposing real values
+  - 90-day rotation policy for the admin password
+  - Documented incident response in `docs/security-checklist.md`
+
+R-12 — Brute-Force Attack on Admin Login
+- **Score:** 12 — 🟡 Medium
+- **Description:** The `/admin` route is publicly accessible. An attacker could write a script to try common passwords until one works.
+- **Mitigation:**
+  - Generic "Invalid username or password" error doesn't reveal which field is wrong
+  - 500ms delay per login attempt slows brute force scripts significantly
+  - Strong password policy (mixed case, numbers, year suffix)
+  - **Future:** Server-side rate limiting (max 5 attempts per IP per 15 min) when backend is added in Step 13
+
+#R-13 — Vulnerable npm Dependency
+- **Score:** 12 — 🟡 Medium
+- **Description:** A new vulnerability could be discovered in any of our 165+ npm dependencies. Without monitoring, our deployed site could quietly become exploitable.
+- **Mitigation:**
+  - `npm audit` baseline established (0 vulnerabilities at v0.9 release)
+  - `npm audit` runs on every CI pipeline execution (`.github/workflows/ci.yml`)
+  - Dependabot enabled on the GitHub repo (planned)
+  - Major versions pinned in `package.json` to limit surprise updates
