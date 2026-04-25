@@ -6,6 +6,7 @@ import {
   isLowStock,
   canReserve,
   formatPrice,
+  validatePrice,
 } from './stock';
 
 describe('decrementStock', () => {
@@ -20,6 +21,14 @@ describe('decrementStock', () => {
   it('never returns a negative number, even when over-decrementing', () => {
     expect(decrementStock(2, 5)).toBe(0);
   });
+
+  it('throws when stock is not a number', () => {
+    expect(() => decrementStock('five', 1)).toThrow(TypeError);
+  });
+
+  it('throws when quantity is negative', () => {
+    expect(() => decrementStock(10, -1)).toThrow(RangeError);
+  });
 });
 
 describe('incrementStock', () => {
@@ -29,6 +38,36 @@ describe('incrementStock', () => {
 
   it('increases stock by the specified quantity', () => {
     expect(incrementStock(10, 3)).toBe(13);
+  });
+
+  it('throws when stock is not a number', () => {
+    expect(() => incrementStock(null, 1)).toThrow(TypeError);
+  });
+
+  it('throws when quantity is negative', () => {
+    expect(() => incrementStock(10, -5)).toThrow(RangeError);
+  });
+});
+
+describe('validatePrice', () => {
+  it('returns null for a valid positive price', () => {
+    expect(validatePrice(50)).toBeNull();
+  });
+
+  it('returns null for zero', () => {
+    expect(validatePrice(0)).toBeNull();
+  });
+
+  it('returns an error message for non-numbers', () => {
+    expect(validatePrice('100')).toContain('must be a number');
+  });
+
+  it('returns an error message for negative prices', () => {
+    expect(validatePrice(-5)).toContain('cannot be negative');
+  });
+
+  it('returns an error message for unreasonably high prices', () => {
+    expect(validatePrice(999999)).toContain('unreasonably high');
   });
 });
 

@@ -357,3 +357,341 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+
+
+/* === APPEND THESE STYLES TO THE BOTTOM OF src/App.css === */
+
+/* -- Login page -- */
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  background: linear-gradient(135deg, #fff3e6 0%, #ffd9b8 100%);
+}
+
+.login-card {
+  background: var(--color-surface);
+  border-radius: 18px;
+  padding: 2.5rem 2rem;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 18px 50px rgba(60, 30, 15, 0.16);
+  text-align: center;
+}
+
+.login-title {
+  margin: 0 0 0.4rem;
+  color: var(--color-primary-dark);
+  font-size: 1.75rem;
+}
+
+.login-subtitle {
+  margin: 0 0 1.75rem;
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  text-align: left;
+}
+
+.login-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.login-input {
+  padding: 0.7rem 0.9rem;
+  font-size: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.login-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(214, 112, 74, 0.15);
+}
+
+.login-error {
+  margin: 0;
+  padding: 0.6rem 0.8rem;
+  background: #fff0e6;
+  border: 1px solid #ffb691;
+  border-radius: 8px;
+  color: #a13b14;
+  font-size: 0.9rem;
+}
+
+.login-button {
+  margin-top: 0.5rem;
+}
+
+.login-footer {
+  margin: 1.5rem 0 0;
+  font-size: 0.85rem;
+}
+
+.login-footer a {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.login-footer a:hover {
+  text-decoration: underline;
+}
+
+/* -- Admin dashboard -- */
+.admin {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  animation: fadeInUp 0.4s var(--ease-smooth) both;
+}
+
+.admin__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--color-border);
+  margin-bottom: 1.5rem;
+}
+
+.admin__title {
+  margin: 0 0 0.25rem;
+  color: var(--color-primary-dark);
+}
+
+.admin__subtitle {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.admin__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.admin__saved {
+  background: #e6f7ea;
+  color: #1f7a3d;
+  padding: 0.3rem 0.7rem;
+  border-radius: 100px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  animation: fadeInUp 0.3s var(--ease-smooth) both;
+}
+
+.admin__link {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.admin__link:hover {
+  text-decoration: underline;
+}
+
+.admin__logout {
+  background: var(--color-text-muted);
+  color: #fff;
+  font-size: 0.9rem;
+  padding: 0.5rem 1rem;
+}
+
+.admin__logout:hover {
+  background: var(--color-text);
+}
+
+.admin__hint {
+  background: #fff7ed;
+  border: 1px solid #ffe5cc;
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin: 0 0 1.5rem;
+}
+
+.admin__hint code {
+  background: #ffe5cc;
+  padding: 0.05rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.85em;
+}
+
+.admin__table-wrapper {
+  background: var(--color-surface);
+  border-radius: 12px;
+  overflow-x: auto;
+  box-shadow: var(--shadow-card);
+}
+
+.admin__table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 720px;
+}
+
+.admin__table th,
+.admin__table td {
+  padding: 0.9rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+
+.admin__table thead th {
+  background: var(--color-bg);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+}
+
+.admin__product {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  min-width: 220px;
+}
+
+.admin__thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.admin__unit {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.admin__input {
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  border-radius: 8px;
+  padding: 0.5rem 0.7rem;
+  font-size: 0.95rem;
+  color: var(--color-text);
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.admin__input:focus {
+  border-color: var(--color-primary);
+}
+
+.admin__input--price {
+  width: 110px;
+}
+
+.admin__current {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  margin-top: 0.25rem;
+}
+
+.admin__stock-num {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.admin__controls {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.admin__btn {
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: transform 0.1s, background 0.15s;
+  min-width: 50px;
+}
+
+.admin__btn:active {
+  transform: scale(0.96);
+}
+
+.admin__btn--minus {
+  background: #ffe5d9;
+  color: #a13b14;
+}
+
+.admin__btn--minus:hover {
+  background: #ffcdb9;
+}
+
+.admin__btn--plus {
+  background: #dcefe2;
+  color: #1f7a3d;
+}
+
+.admin__btn--plus:hover {
+  background: #bae0c5;
+}
+
+/* Status tags */
+.tag {
+  display: inline-block;
+  padding: 0.25rem 0.7rem;
+  border-radius: 100px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.tag--ok {
+  background: #dcefe2;
+  color: #1f7a3d;
+}
+
+.tag--low {
+  background: #fff3d2;
+  color: #a17117;
+}
+
+.tag--sold-out {
+  background: #f0f0f0;
+  color: #6b6b6b;
+}
+
+@media (max-width: 600px) {
+  .admin {
+    padding: 1rem;
+  }
+  .admin__header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
