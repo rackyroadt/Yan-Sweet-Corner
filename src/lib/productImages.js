@@ -7,6 +7,7 @@ import kutsinta from '../assets/products/kutsinta.jpeg';
 import cookies from '../assets/products/cookies.jpeg';
 import crinkles from '../assets/products/crinkles.jpeg';
 import polvoron from '../assets/products/polvoron.jpeg';
+import placeholder from '../assets/products/placeholder.svg';
 
 export const PRODUCT_IMAGES = {
   'mango-float': mangoFloat,
@@ -21,6 +22,5 @@ export const PRODUCT_IMAGES = {
 };
 
 export function getProductImage(productId) {
-  return PRODUCT_IMAGES[productId] || mangoFloat; // mango as a sensible default fallback
+  return PRODUCT_IMAGES[productId] || placeholder;
 }
-
