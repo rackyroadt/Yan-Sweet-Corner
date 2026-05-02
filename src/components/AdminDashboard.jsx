@@ -1,12 +1,20 @@
-﻿import { useState, useEffect } from 'react';
+﻿import { useState, useEffect, useCallback } from 'react';
 import { CONTACT } from '../data/products';
 import { decrementStock, incrementStock, validatePrice, formatPrice, isLowStock, isSoldOut } from '../utils/stock';
-import { fetchProducts, updateProductInDb, subscribeToProductChanges } from '../lib/supabase';
+import { fetchProducts, updateProductInDb, subscribeToProductChanges, supabase } from '../lib/supabase';
 import { getProductImage } from '../lib/productImages';
 
 function logEvent(eventType, payload) {
   const timestamp = new Date().toISOString();
   console.log('[admin-event]', timestamp, eventType, payload);
+}
+
+function slugify(text) {
+  return text.toLowerCase().trim()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '');
 }
 
 export default function AdminDashboard({ onLogout }) {
@@ -15,36 +23,40 @@ export default function AdminDashboard({ onLogout }) {
   const [savedMessage, setSavedMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+  const [newProduct, setNewProduct] = useState({
+    name: '', description: '', price: '', unit: 'piece', stock: ''
+  });
+
+  const loadProducts = useCallback(async () => {
+    try {
+      const data = await fetchProducts();
+      setProducts(data);
+      const newDrafts = {};
+      data.forEach(prod => {
+        newDrafts[prod.id] = {
+          price: String(prod.price), name: prod.name, description: prod.description,
+        };
+      });
+      setDrafts(newDrafts);
+    } catch (err) {
+      setErrorMessage('Failed to load: ' + err.message);
+    }
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
-    async function loadProducts() {
-      try {
-        const data = await fetchProducts();
-        if (cancelled) return;
-        setProducts(data);
-        const newDrafts = {};
-        data.forEach(prod => {
-          newDrafts[prod.id] = {
-            price: String(prod.price),
-            name: prod.name,
-            description: prod.description,
-          };
-        });
-        setDrafts(newDrafts);
-      } catch (err) {
-        setErrorMessage('Failed to load: ' + err.message);
-      } finally {
-        if (!cancelled) setIsLoading(false);
-      }
-    }
-    loadProducts();
+    (async () => {
+      await loadProducts();
+      if (!cancelled) setIsLoading(false);
+    })();
     const unsubscribe = subscribeToProductChanges(() => loadProducts());
     return () => { cancelled = true; unsubscribe(); };
-  }, []);
+  }, [loadProducts]);
 
-  const showSaved = () => { setSavedMessage('Saved'); setTimeout(() => setSavedMessage(''), 1800); };
-  const showError = (msg) => { setErrorMessage(msg); setTimeout(() => setErrorMessage(''), 3000); };
+  const showSaved = (msg) => { setSavedMessage(msg || 'Saved'); setTimeout(() => setSavedMessage(''), 1800); };
+  const showError = (msg) => { setErrorMessage(msg); setTimeout(() => setErrorMessage(''), 3500); };
 
   const updateDraft = (productId, field, value) => {
     setDrafts(prev => ({ ...prev, [productId]: { ...prev[productId], [field]: value } }));
@@ -112,6 +124,52 @@ export default function AdminDashboard({ onLogout }) {
     }
   };
 
+  const handleAddProduct = async () => {
+    const name = newProduct.name.trim();
+    const description = newProduct.description.trim();
+    const price = Number(newProduct.price);
+    const unit = newProduct.unit.trim();
+    const stock = parseInt(newProduct.stock, 10);
+
+    if (!name || name.length > 80) { showError('Name required (1-80 chars)'); return; }
+    if (!description || description.length > 500) { showError('Description required (1-500 chars)'); return; }
+    if (validatePrice(price)) { showError(validatePrice(price)); return; }
+    if (!unit) { showError('Unit required (e.g. piece, cup)'); return; }
+    if (isNaN(stock) || stock < 0) { showError('Stock must be a non-negative number'); return; }
+
+    const id = slugify(name);
+    if (!id) { showError('Name must contain letters or numbers'); return; }
+    if (products.find(p => p.id === id)) { showError('A product with this name already exists'); return; }
+
+    try {
+      const { error } = await supabase.from('products').insert({
+        id, name, description, price, unit, stock,
+        image: '/products/placeholder.svg',
+      });
+      if (error) throw error;
+      logEvent('product_added', { id, name });
+      setShowAddModal(false);
+      setNewProduct({ name: '', description: '', price: '', unit: 'piece', stock: '' });
+      await loadProducts();
+      showSaved('Product added');
+    } catch (err) {
+      showError('Add failed: ' + err.message);
+    }
+  };
+
+  const handleDelete = async (productId) => {
+    try {
+      const { error } = await supabase.from('products').delete().eq('id', productId);
+      if (error) throw error;
+      logEvent('product_deleted', { productId });
+      setConfirmDeleteId(null);
+      await loadProducts();
+      showSaved('Deleted');
+    } catch (err) {
+      showError('Delete failed: ' + err.message);
+    }
+  };
+
   const onKeyDown = (event) => {
     if (event.key === 'Enter' && event.target.tagName !== 'TEXTAREA') {
       event.preventDefault();
@@ -139,11 +197,22 @@ export default function AdminDashboard({ onLogout }) {
           <button onClick={handleLogout} className="btn admin__logout">Log Out</button>
         </div>
       </header>
-      <p className="admin__hint">Edit any field. Press Enter or click outside to save.</p>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '0 0 1rem' }}>
+        <p className="admin__hint" style={{ margin: 0, flex: 1 }}>Edit any field. Press Enter or click outside to save.</p>
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="btn admin__add-btn"
+          style={{ marginLeft: '1rem' }}
+        >
+          + Add New Product
+        </button>
+      </div>
+
       <div className="admin__table-wrapper">
         <table className="admin__table">
           <thead>
-            <tr><th>Photo</th><th>Name and Description</th><th>Price</th><th>Stock</th><th>Status</th><th>Adjust</th></tr>
+            <tr><th>Photo</th><th>Name and Description</th><th>Price</th><th>Stock</th><th>Status</th><th>Adjust</th><th></th></tr>
           </thead>
           <tbody>
             {products.map(prod => {
@@ -186,12 +255,81 @@ export default function AdminDashboard({ onLogout }) {
                     <button type="button" onClick={() => handleStockChange(k, 1)} className="admin__btn admin__btn--plus">+1</button>
                     <button type="button" onClick={() => handleStockChange(k, 5)} className="admin__btn admin__btn--plus">+5</button>
                   </td>
+                  <td>
+                    <button type="button"
+                      onClick={() => setConfirmDeleteId(k)}
+                      className="admin__btn admin__btn--delete"
+                      title="Delete product">
+                      Delete
+                    </button>
+                  </td>
                 </tr>
               );
             })}
           </tbody>
         </table>
       </div>
+
+      {showAddModal && (
+        <div className="admin__modal-overlay" onClick={() => setShowAddModal(false)}>
+          <div className="admin__modal" onClick={(e) => e.stopPropagation()}>
+            <h2 className="admin__modal-title">Add New Product</h2>
+            <div className="admin__modal-body">
+              <label className="admin__modal-label">
+                Name (e.g. Maja Blanca)
+                <input type="text" value={newProduct.name}
+                  onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
+                  className="admin__input" maxLength={80} autoFocus />
+              </label>
+              <label className="admin__modal-label">
+                Description
+                <textarea value={newProduct.description}
+                  onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
+                  className="admin__input" maxLength={500} rows={3} />
+              </label>
+              <div className="admin__modal-row">
+                <label className="admin__modal-label" style={{ flex: 1 }}>
+                  Price (PHP)
+                  <input type="number" min="0" step="0.01" value={newProduct.price}
+                    onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
+                    className="admin__input" />
+                </label>
+                <label className="admin__modal-label" style={{ flex: 1 }}>
+                  Unit
+                  <input type="text" value={newProduct.unit}
+                    onChange={(e) => setNewProduct({ ...newProduct, unit: e.target.value })}
+                    className="admin__input" placeholder="piece, cup..." />
+                </label>
+                <label className="admin__modal-label" style={{ flex: 1 }}>
+                  Stock
+                  <input type="number" min="0" value={newProduct.stock}
+                    onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value })}
+                    className="admin__input" />
+                </label>
+              </div>
+            </div>
+            <div className="admin__modal-actions">
+              <button onClick={() => setShowAddModal(false)} className="btn admin__logout">Cancel</button>
+              <button onClick={handleAddProduct} className="btn admin__btn--plus" style={{ padding: '0.6rem 1.2rem' }}>Add Product</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {confirmDeleteId && (
+        <div className="admin__modal-overlay" onClick={() => setConfirmDeleteId(null)}>
+          <div className="admin__modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px' }}>
+            <h2 className="admin__modal-title">Delete this product?</h2>
+            <p style={{ color: 'var(--color-text-muted)' }}>
+              This will permanently remove "{products.find(p => p.id === confirmDeleteId)?.name}" from the public site. This cannot be undone.
+            </p>
+            <div className="admin__modal-actions">
+              <button onClick={() => setConfirmDeleteId(null)} className="btn admin__logout">Cancel</button>
+              <button onClick={() => handleDelete(confirmDeleteId)} className="btn admin__btn--minus" style={{ padding: '0.6rem 1.2rem' }}>Yes, Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
