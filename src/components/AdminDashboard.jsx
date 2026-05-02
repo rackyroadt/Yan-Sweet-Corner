@@ -1,6 +1,7 @@
 ﻿import { useState, useEffect } from 'react';
 import { CONTACT } from '../data/products';
 import { decrementStock, incrementStock, validatePrice, formatPrice, isLowStock, isSoldOut } from '../utils/stock';
+import { getProductImage } from '../lib/productImages';
 import { fetchProducts, updateProductInDb, subscribeToProductChanges } from '../lib/supabase';
 
 function logEvent(eventType, payload) {
@@ -155,7 +156,7 @@ export default function AdminDashboard({ onLogout }) {
               return (
                 <tr key={productKey}>
                   <td className="admin__product">
-                    <img src={prod.image} alt="" className="admin__thumb" loading="lazy" />
+                    <img src={getProductImage(prod.id)} alt="" className="admin__thumb" loading="lazy" />
                     <div><strong>{prod.name}</strong><div className="admin__unit">per {prod.unit}</div></div>
                   </td>
                   <td>
@@ -184,3 +185,4 @@ export default function AdminDashboard({ onLogout }) {
     </div>
   );
 }
+
