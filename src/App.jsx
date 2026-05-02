@@ -1,11 +1,47 @@
-// src/App.jsx
+import { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import ProductCard from './components/ProductCard';
 import AdminLayout from './components/AdminLayout';
-import { PRODUCTS, CONTACT } from './data/products';
+import { PRODUCTS as STATIC_PRODUCTS, CONTACT } from './data/products';
+import { fetchProducts, subscribeToProductChanges } from './lib/supabase';
 import './App.css';
 
 function PublicSite() {
+  const [products, setProducts] = useState(STATIC_PRODUCTS); // fallback while loading
+  const [isLoading, setIsLoading] = useState(true);
+  const [usingFallback, setUsingFallback] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadProducts() {
+      try {
+        const data = await fetchProducts();
+        if (!cancelled && data && data.length > 0) {
+          setProducts(data);
+          setUsingFallback(false);
+        }
+      } catch (err) {
+        console.warn('Using static product fallback:', err.message);
+        if (!cancelled) setUsingFallback(true);
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    }
+
+    loadProducts();
+
+    // Real-time updates: re-fetch whenever any product changes
+    const unsubscribe = subscribeToProductChanges(() => {
+      loadProducts();
+    });
+
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
+  }, []);
+
   return (
     <div className="app">
       <header className="hero">
@@ -19,7 +55,10 @@ function PublicSite() {
       </header>
 
       <main className="grid">
-        {PRODUCTS.map((product) => (
+        {isLoading && products === STATIC_PRODUCTS && (
+          <p className="grid__loading">Loading the latest menu…</p>
+        )}
+        {products.map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}
       </main>
@@ -87,6 +126,12 @@ function PublicSite() {
             </div>
           </div>
         </div>
+
+        {usingFallback && (
+          <p className="footer__notice">
+            (Note: showing cached menu — live data temporarily unavailable.)
+          </p>
+        )}
 
         <p className="footer__credit">
           © {new Date().getFullYear()} {CONTACT.businessName}. Made with ❤️ in CDO.
