@@ -1,46 +1,68 @@
-import { useState } from 'react';
-import { PRODUCTS, CONTACT } from '../data/products';
+﻿import { useState, useEffect } from 'react';
+import { CONTACT } from '../data/products';
 import { decrementStock, incrementStock, validatePrice, formatPrice, isLowStock, isSoldOut } from '../utils/stock';
+import { fetchProducts, updateProductInDb, subscribeToProductChanges } from '../lib/supabase';
 
-// Simple logger for admin actions. Logs to console in development;
-// in production these calls become no-ops (or could be wired to a real
-// logging service in a future version).
 function logEvent(eventType, payload) {
   const timestamp = new Date().toISOString();
   console.log('[admin-event]', timestamp, eventType, payload);
 }
 
 export default function AdminDashboard({ onLogout }) {
-  const [products, setProducts] = useState(() => PRODUCTS.map(prod => ({ ...prod })));
-  const [priceDrafts, setPriceDrafts] = useState(() => {
-    const drafts = {};
-    PRODUCTS.forEach(prod => { drafts[prod.id] = String(prod.price); });
-    return drafts;
-  });
+  const [products, setProducts] = useState([]);
+  const [priceDrafts, setPriceDrafts] = useState({});
   const [savedMessage, setSavedMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadProducts() {
+      try {
+        const data = await fetchProducts();
+        if (cancelled) return;
+        setProducts(data);
+        const drafts = {};
+        data.forEach(prod => { drafts[prod.id] = String(prod.price); });
+        setPriceDrafts(drafts);
+      } catch (err) {
+        setErrorMessage('Failed to load products from database: ' + err.message);
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    }
+    loadProducts();
+
+    const unsubscribe = subscribeToProductChanges(() => loadProducts());
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
+  }, []);
 
   const showSaved = () => {
-    setSavedMessage('Saved');
-    setTimeout(() => setSavedMessage(''), 1500);
+    setSavedMessage('Saved to cloud');
+    setTimeout(() => setSavedMessage(''), 1800);
   };
 
-  const updateProduct = (productId, changes) => {
-    setProducts(prev => prev.map(prod => prod.id === productId ? { ...prod, ...changes } : prod));
-    showSaved();
+  const showError = (msg) => {
+    setErrorMessage(msg);
+    setTimeout(() => setErrorMessage(''), 3000);
   };
 
-  const handleStockChange = (productId, delta) => {
+  const handleStockChange = async (productId, delta) => {
     const product = products.find(prod => prod.id === productId);
     if (!product) return;
     try {
       const newStock = delta > 0
         ? incrementStock(product.stock, delta)
         : decrementStock(product.stock, Math.abs(delta));
-      logEvent('stock_change', { productId, name: product.name, oldStock: product.stock, newStock, delta });
-      updateProduct(productId, { stock: newStock });
+      logEvent('stock_change', { productId, oldStock: product.stock, newStock, delta });
+      await updateProductInDb(productId, { stock: newStock });
+      showSaved();
     } catch (err) {
-      logEvent('stock_change_error', { productId, delta, error: err.message });
-      alert('Error updating stock: ' + err.message);
+      logEvent('stock_change_error', { productId, error: err.message });
+      showError('Error: ' + err.message);
     }
   };
 
@@ -48,20 +70,28 @@ export default function AdminDashboard({ onLogout }) {
     setPriceDrafts(prev => ({ ...prev, [productId]: value }));
   };
 
-  const handlePriceSave = (productId) => {
-    const num = Number(priceDrafts[productId]);
+  const handlePriceSave = async (productId) => {
+    const draft = priceDrafts[productId];
+    const num = Number(draft);
     const error = validatePrice(num);
     const product = products.find(prod => prod.id === productId);
     if (error) {
-      logEvent('price_save_rejected', { productId, attempted: priceDrafts[productId], reason: error });
-      alert(error);
-      setPriceDrafts(prev => ({ ...prev, [productId]: String(product.price) }));
+      logEvent('price_save_rejected', { productId, attempted: draft, reason: error });
+      showError(error);
+      if (product) {
+        setPriceDrafts(prev => ({ ...prev, [productId]: String(product.price) }));
+      }
       return;
     }
     if (product && num !== product.price) {
-      logEvent('price_change', { productId, name: product.name, oldPrice: product.price, newPrice: num });
+      try {
+        logEvent('price_change', { productId, oldPrice: product.price, newPrice: num });
+        await updateProductInDb(productId, { price: num });
+        showSaved();
+      } catch (err) {
+        showError('Error saving price: ' + err.message);
+      }
     }
-    updateProduct(productId, { price: num });
   };
 
   const onPriceInputChange = (productId) => (event) => {
@@ -84,22 +114,30 @@ export default function AdminDashboard({ onLogout }) {
     onLogout();
   };
 
+  if (isLoading) {
+    return (
+      <div className="admin">
+        <p style={{ textAlign: 'center', padding: '3rem' }}>Loading products from cloud database…</p>
+      </div>
+    );
+  }
+
   return (
     <div className="admin">
       <header className="admin__header">
         <div>
           <h1 className="admin__title">Admin Dashboard</h1>
-          <p className="admin__subtitle">{CONTACT.businessName} — Stock & Pricing</p>
+          <p className="admin__subtitle">{CONTACT.businessName} — Stock & Pricing (Live, Cloud-backed)</p>
         </div>
         <div className="admin__header-actions">
           {savedMessage && <span className="admin__saved">✓ {savedMessage}</span>}
+          {errorMessage && <span className="admin__saved" style={{ background: '#fde4e4', color: '#a13b14' }}>⚠ {errorMessage}</span>}
           <a href="/" className="admin__link">View public site →</a>
           <button onClick={handleLogout} className="btn admin__logout">Log Out</button>
         </div>
       </header>
       <p className="admin__hint">
-        💡 Tip: Edit a price, then press <strong>Enter</strong> or click outside the field to save.
-        Changes are temporary in this MVP.
+        💡 Changes save instantly to the cloud database. The public site updates in real-time across all devices.
       </p>
       <div className="admin__table-wrapper">
         <table className="admin__table">
@@ -122,7 +160,7 @@ export default function AdminDashboard({ onLogout }) {
                   </td>
                   <td>
                     <input type="number" min="0" step="0.01"
-                      value={priceDrafts[productKey]}
+                      value={priceDrafts[productKey] || ''}
                       onChange={onPriceInputChange(productKey)}
                       onBlur={onPriceInputBlur(productKey)}
                       onKeyDown={onPriceInputKeyDown}
