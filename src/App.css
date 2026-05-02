@@ -711,3 +711,44 @@ body {
   font-style: italic;
   margin-bottom: 0.5rem;
 }
+/* Phase 1 - Editable name and description in admin */
+.admin__name-cell {
+  min-width: 280px;
+  max-width: 360px;
+}
+
+.admin__input--name {
+  width: 100%;
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 0.4rem;
+}
+
+.admin__input--desc {
+  width: 100%;
+  font-size: 0.85rem;
+  resize: vertical;
+  min-height: 50px;
+  font-family: inherit;
+}
+
+/* Phase 1 - Editable name and description in admin */
+.admin__name-cell {
+  min-width: 280px;
+  max-width: 360px;
+}
+
+.admin__input--name {
+  width: 100%;
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 0.4rem;
+}
+
+.admin__input--desc {
+  width: 100%;
+  font-size: 0.85rem;
+  resize: vertical;
+  min-height: 50px;
+  font-family: inherit;
+}
