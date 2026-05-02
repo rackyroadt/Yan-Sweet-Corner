@@ -100,3 +100,23 @@ Made “Proposed Fix” sections consistent
 Clarified priority reasoning
 Normalized tone across all entries
 
+## DEBT-06 — Admin can't upload new product photos
+
+**Discovered:** May 2, 2026 (post-v1.0)
+**Severity:** Low — feature gap, not a bug
+**Location:** Admin dashboard, all product rows
+
+**Description:**
+Product photos are currently bundled with the React app at build time (`src/assets/products/`). Changing a photo requires editing code, committing, pushing, redeploying. The admin can edit prices and stock through the UI but not photos.
+
+**Impact:**
+Owner can't refresh photos seasonally or for new product variants without developer help.
+
+**Plan:**
+v1.1 will add Supabase Storage integration:
+- "Upload Photo" button per product in admin
+- File uploads to a Supabase Storage bucket
+- Public URL saved back to the products table
+- Public site reads `image_url` from DB instead of bundled imports
+
+Estimated effort: 3-4 hours.
