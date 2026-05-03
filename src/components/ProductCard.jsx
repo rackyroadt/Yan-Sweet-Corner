@@ -1,11 +1,10 @@
 import { formatPrice, isLowStock, isSoldOut } from '../utils/stock';
-import { getProductImage } from '../lib/productImages';
 
 export default function ProductCard({ product }) {
-  const { id, name, description, price, unit, stock } = product;
+  const { id, name, description, price, unit, stock, image_url } = product;
   const lowStock = isLowStock(stock);
   const soldOut = isSoldOut(stock);
-  const imageSrc = getProductImage(id);
+  const imageSrc = image_url || '/placeholder.svg';
 
   return (
     <article className={`card ${soldOut ? 'card--sold-out' : ''}`}>
