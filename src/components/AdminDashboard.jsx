@@ -1,8 +1,7 @@
-﻿import { useState, useEffect, useCallback } from 'react';
+﻿import { useState, useEffect, useCallback, useRef } from 'react';
 import { CONTACT } from '../data/products';
 import { decrementStock, incrementStock, validatePrice, formatPrice, isLowStock, isSoldOut } from '../utils/stock';
 import { fetchProducts, updateProductInDb, subscribeToProductChanges, supabase } from '../lib/supabase';
-import { getProductImage } from '../lib/productImages';
 
 function logEvent(eventType, payload) {
   const timestamp = new Date().toISOString();
@@ -25,9 +24,11 @@ export default function AdminDashboard({ onLogout }) {
   const [isLoading, setIsLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+  const [uploadingId, setUploadingId] = useState(null);
   const [newProduct, setNewProduct] = useState({
     name: '', description: '', price: '', unit: 'piece', stock: ''
   });
+  const fileInputRefs = useRef({});
 
   const loadProducts = useCallback(async () => {
     try {
@@ -60,6 +61,30 @@ export default function AdminDashboard({ onLogout }) {
 
   const updateDraft = (productId, field, value) => {
     setDrafts(prev => ({ ...prev, [productId]: { ...prev[productId], [field]: value } }));
+  };
+
+  const handleImageUpload = async (productId, file) => {
+    if (!file) return;
+    const ext = file.name.split('.').pop();
+    const path = `${productId}-${Date.now()}.${ext}`;
+    setUploadingId(productId);
+    try {
+      const { data, error } = await supabase.storage
+        .from('product-images')
+        .upload(path, file, { upsert: true, contentType: file.type });
+      if (error) throw error;
+      const { data: { publicUrl } } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(data.path);
+      await updateProductInDb(productId, { image_url: publicUrl });
+      setProducts(prev => prev.map(p => p.id === productId ? { ...p, image_url: publicUrl } : p));
+      logEvent('image_uploaded', { productId, path });
+      showSaved('Photo updated');
+    } catch (err) {
+      showError('Upload failed: ' + err.message);
+    } finally {
+      setUploadingId(null);
+    }
   };
 
   const handleStockChange = async (productId, delta) => {
@@ -200,11 +225,7 @@ export default function AdminDashboard({ onLogout }) {
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '0 0 1rem' }}>
         <p className="admin__hint" style={{ margin: 0, flex: 1 }}>Edit any field. Press Enter or click outside to save.</p>
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="btn admin__add-btn"
-          style={{ marginLeft: '1rem' }}
-        >
+        <button onClick={() => setShowAddModal(true)} className="btn admin__add-btn" style={{ marginLeft: '1rem' }}>
           + Add New Product
         </button>
       </div>
@@ -225,7 +246,25 @@ export default function AdminDashboard({ onLogout }) {
                 : { label: 'In Stock', className: 'tag tag--ok' };
               return (
                 <tr key={k}>
-                  <td><img src={getProductImage(k)} alt="" className="admin__thumb" loading="lazy" /></td>
+                  <td>
+                    <img src={prod.image_url || '/placeholder.svg'} alt="" className="admin__thumb" loading="lazy" />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      ref={el => fileInputRefs.current[k] = el}
+                      onChange={e => handleImageUpload(k, e.target.files[0])}
+                    />
+                    <button
+                      type="button"
+                      className="admin__btn"
+                      style={{ marginTop: '0.4rem', fontSize: '0.7rem', width: '100%' }}
+                      disabled={uploadingId === k}
+                      onClick={() => fileInputRefs.current[k]?.click()}
+                    >
+                      {uploadingId === k ? 'Uploading...' : 'Upload Photo'}
+                    </button>
+                  </td>
                   <td className="admin__name-cell">
                     <input type="text" value={draft.name}
                       onChange={(e) => updateDraft(k, 'name', e.target.value)}
